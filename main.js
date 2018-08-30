@@ -13,14 +13,40 @@ class Vector {
   }
 }
 
+class GameDifficulty {
+  constructor(maxLevel) {
+    this.maxLevel = maxLevel ? maxLevel + 1 : 11;
+    this.state = 1;
+  }
+
+  levelUp(on) {
+    if (this.maxLevel - 1 === this.state) return;
+
+    if (!on) return this.state++;
+    this.state -= on;
+  }
+
+  levelDown(on) {
+    if (this.state === 1) return;
+
+    if (!on) return this.state--;
+    this.state -= on;
+  }
+}
+
 class World {
   constructor(canvas) {
+    this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+    this.width = canvas.width = 300;
+    this.height = canvas.height = 300;
 
     this.scene = {
       background: [],
       front: []
     };
+
+    this.tickCallbacks = [];
   }
 
   start() {
@@ -34,6 +60,7 @@ class World {
   }
 
   render() {
+    this.ctx.clearRect(0, 0, this.width, this.height);
     this.scene.background.forEach(obj => obj.render());
     this.scene.front.forEach(obj => obj.render());
   }
@@ -53,9 +80,14 @@ class World {
     this.scene[store].push(obj);
   }
 
+  _addToTick(fn) {
+    this.tickCallbacks.push(fn);
+  }
+
   _tick() {
     this.update();
     this.render();
+    this.tickCallbacks.forEach(fn => fn());
     requestAnimationFrame(this._tick.bind(this));
   }
 }
@@ -75,6 +107,34 @@ class RenderableObject {
   }
 }
 
+
+// Game classes =======================
+
+
+
+class SpaceInvaderWorld extends World {
+  constructor(config) {
+    super(config);
+    this.height = this.canvas.height = 500;
+    this.difficulty = new GameDifficulty(100);
+    this.invaderTime = {
+      last: Date.now(),
+      period: (this.difficulty.maxLevel - this.difficulty.state) * 20
+    };
+
+    this._addToTick(this.renderInvader.bind(this));
+  }
+
+  renderInvader() {
+    var {last, period} = this.invaderTime;
+    var now = Date.now();
+    if (last && now - period > last) {
+      this.addFront(Invader);
+      this.invaderTime.last = Date.now();
+    }
+  }
+}
+
 class Invader extends RenderableObject {
   constructor(config) {
     super(config);
@@ -83,7 +143,6 @@ class Invader extends RenderableObject {
 
   update() {
     this.loc.add(this.speed);
-    console.log(this.loc);
   }
 
   render() {
@@ -95,5 +154,6 @@ class Invader extends RenderableObject {
   }
 }
 
-var world = new World(document.getElementById('canvas'));
+var world = new SpaceInvaderWorld(document.getElementById('canvas'));
+world.addFront(Invader);
 world.start();
