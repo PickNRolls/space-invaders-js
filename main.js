@@ -1,7 +1,32 @@
+var random = (min, max) => {
+  return Math.floor(Math.random() * max) + min;
+};
+
 class Vector {
-  constructor(x, y) {
-    this.x = x ? x : 0;
-    this.y = y ? y : 0;
+  constructor(arg0, arg1, arg2, arg3) {
+    if (arg0 === 'random' && arg1 === 'random') {
+      this.x = random(arg2, arg3);
+      this.y = this.x;
+      return;
+    }
+
+    if (arg0 === 'random') {
+      this.x = random(arg1, arg2);
+      this.y = arg3;
+      return;
+    }
+
+    if (arg1 === 'random') {
+      this.y = random(arg2, arg3);
+      this.x = random(arg0);
+      return;
+    }
+
+    this.x = arg0;
+    this.y = arg1;
+
+    if (!arg0) this.x = 0;
+    if (!arg1) this.y = 0;
   }
 
   reverseX() { this.x *= -1; }
@@ -23,7 +48,7 @@ class GameDifficulty {
     if (this.maxLevel - 1 === this.state) return;
 
     if (!on) return this.state++;
-    this.state -= on;
+    this.state += on;
   }
 
   levelDown(on) {
@@ -95,7 +120,7 @@ class World {
 class RenderableObject {
   constructor(config) {
     this.world = config.world;
-    this.loc = new Vector();
+    this.loc = config.loc ? config.loc : new Vector();
   }
 
   update() {
@@ -129,9 +154,23 @@ class SpaceInvaderWorld extends World {
     var {last, period} = this.invaderTime;
     var now = Date.now();
     if (last && now - period > last) {
-      this.addFront(Invader);
+      this.addFront(Invader, {
+        loc: new Vector('random', 0, this.width, 0)
+      });
       this.invaderTime.last = Date.now();
     }
+  }
+
+  levelUp(on) {
+    this.difficulty.levelUp(on);
+    this.invaderTime.period =
+      (this.difficulty.maxLevel - this.difficulty.state) * 20;
+  }
+
+  levelDown(on) {
+    this.difficulty.levelDown(on);
+    this.invaderTime.period =
+      (this.difficulty.maxLevel - this.difficulty.state) * 20;
   }
 }
 
@@ -139,16 +178,23 @@ class Invader extends RenderableObject {
   constructor(config) {
     super(config);
     this.speed = new Vector(1, 1);
+    this.size = 5;
   }
 
   update() {
+    var e = this.loc.x + this.size > this.world.width ||
+      this.loc.x + this.size < 0;
+
+    if (e)
+      this.speed.reverseX();
+
     this.loc.add(this.speed);
   }
 
   render() {
     var ctx = this.world.ctx;
     ctx.beginPath();
-    ctx.arc(this.loc.x, this.loc.y, 5, 0, 2 * Math.PI);
+    ctx.arc(this.loc.x, this.loc.y, this.size, 0, 2 * Math.PI);
     ctx.fillStyle = '#000';
     ctx.fill();
   }
