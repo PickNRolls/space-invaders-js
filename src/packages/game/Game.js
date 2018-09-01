@@ -1,6 +1,8 @@
+var World = require('../abstract/World');
+
 class Game {
-  constructor(world) {
-    this.world = world;
+  constructor(canvas) {
+    this.world = new World(canvas);
   }
 }
 

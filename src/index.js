@@ -1,6 +1,5 @@
 var Game = require('./packages/game/Game');
 var World = require('./packages/abstract/World');
 
-var world = new World(document.getElementById('canvas'));
-var game = new Game(world);
+var game = new Game(document.getElementById('canvas'));
 window.game = game;
