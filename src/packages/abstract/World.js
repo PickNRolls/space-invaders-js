@@ -13,6 +13,7 @@ class AbstractWorld {
     config.world = this;
     var obj = new constructor(config);
     this.objects.push(obj);
+    return obj;
   }
 
   tick() {
