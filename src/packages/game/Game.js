@@ -14,7 +14,9 @@ class Game {
   }
 
   start() {
-    this.components.invaderFactory = this.world.addObject(InvaderFactory);
+    this.components.invaderFactory = this.world.addObject(InvaderFactory, {
+      period: 2000
+    });
     this.components.protecter = this.world.addObject(Protecter);
     this.world.tick();
   }
