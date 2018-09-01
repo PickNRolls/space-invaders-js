@@ -8,6 +8,13 @@ class AbstractWorld {
     this.objects = [];
   }
 
+  addObject(constructor, config) {
+    if (!config) config = {};
+    config.world = this;
+    var obj = new constructor(config);
+    this.objects.push(obj);
+  }
+
   tick() {
     this.update();
     this.render();
