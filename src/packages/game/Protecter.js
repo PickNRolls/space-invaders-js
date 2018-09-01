@@ -1,6 +1,8 @@
 var Vec2 = require('../abstract/Vec2');
 var RenderableObject = require('../abstract/RenderableObject');
 
+var Shot = require('./Shot');
+
 class Protecter extends RenderableObject {
   constructor(config) {
     super(config);
@@ -10,7 +12,14 @@ class Protecter extends RenderableObject {
       (this.world.width - this.width) / 2,
       this.world.height - this.height
     );
-    this.speed = new Vec2(1, 0);
+    this.speed = new Vec2(2, 0);
+    this.shoots = [];
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') this.changeDirection(1);
+      if (e.key === 'ArrowLeft') this.changeDirection(0);
+      if (e.key === ' ') this.shoot();
+    });
   }
 
   isSideCollision() {
@@ -28,10 +37,24 @@ class Protecter extends RenderableObject {
     return 1;
   }
 
+  shoot() {
+    var shot = new Shot({
+      world: this.world,
+      loc: new Vec2(
+        this.loc.x.length + this.width / 2,
+        this.loc.y.length - this.height
+      )
+    });
+
+    this.shoots.push(shot);
+  }
+
   update() {
     if (this.isSideCollision()) {
       this.speed.x.reverse();
     }
+
+    this.shoots.forEach(shot => shot.update());
 
     this.loc.add(this.speed);
   }
@@ -44,6 +67,8 @@ class Protecter extends RenderableObject {
     c.fillStyle = '#000';
     c.fill();
     c.closePath();
+
+    this.shoots.forEach(shot => shot.render());
   }
 }
 
