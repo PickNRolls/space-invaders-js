@@ -6,14 +6,21 @@ var InvaderFactory = require('./InvaderFactory');
 class Game {
   constructor(canvas) {
     this.world = new World(canvas);
+    this.isStarted = false;
     this.difficulty = 0;
     this.components = {
       invaderFactory: null,
       protecter: null
     };
+
+    canvas.addEventListener('click', () => {
+      if (!this.isStarted) this.start();
+    });
   }
 
   start() {
+    this.isStarted = true;
+
     this.components.invaderFactory = this.world.addObject(InvaderFactory, {
       period: 2000
     });
